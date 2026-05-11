@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-affinity
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: affinity
+  template:
+    metadata:
+      labels:
+        app: affinity
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          # Escala de verificación 3
+          resources: {}
+
+      affinity:
+        nodeAffinity:
+          # escala 1 de verificación
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch # topology keys
+                    operator: In
+                    values:
+                      - amd64 # Solo nodos con esta arquitectura
+
+          # escala 4 de verificación
+          preferredDuringSchedulingIgnoredDuringExecution:
+            # Pesos
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: gpu
+                    operator: In
+                    values:
+                      - "true" # Prefiere nodos con GPU disponible
+
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: zone
+                    operator: NotIn
+                    values:
+                      - us-east-1b # Prefiere nodos fuera de esta zona
+
+            - weight: 20
+              preference:
+                matchExpressions:
+                  - key: fast-ssd
+                    operator: Exists # Solo requiere que exista la etiqueta (key), el valor da lo mismo
+
+            - weight: 10
+              preference:
+                matchExpressions:
+                  - key: maintenance
+                    operator: DoesNotExist # Prefiere nodos que no tengan esta etiqueta
+
+      # escala 2 de verificación: nodo 2
+      tolerations:
+        - key: gpu # Clave del taint del nodo
+          operator: Equal # Debe coincidir exactamente llave + valor
+          value: ml # Valor esperado del taint
+          effect: NoSchedule # Para poder programar en nodos con taint
