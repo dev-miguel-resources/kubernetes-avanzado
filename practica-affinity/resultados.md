@@ -17,32 +17,32 @@ kubectl get nodes --show-labels
 # 3. Agregar labels de prueba
 # -----------------------------
 # Nodo con GPU
-kubectl label node minikube-m02 gpu=true (solo nodo 2)
+kubectl label node minikube-m02 gpu=true
+
+Resultado esperado:
+node/minikube-m02 labeled
+
+# Zona del nodo
+kubectl label node minikube-m02 zone=us-east-1a
 
 Resultado esperado:
 node/minikube-m02 labeled
 
 # Nodo en otra zona
-kubectl label node minikube-m02 zone=us-east-1a (no es considerada)
-
-Resultado esperado:
-node/minikube-m02 labeled
-
-# Nodo en otra zona
-kubectl label node minikube-m03 zone=us-east-1b (nodo 3)
+kubectl label node minikube-m03 zone=us-east-1b
 
 Resultado esperado:
 node/minikube-m03 labeled
 
 # Nodo con SSD rápido
-kubectl label node minikube-m02 fast-ssd (nodo 2)
+kubectl label node minikube-m02 fast-ssd
 kubectl label node minikube-m02 fast-ssd=true
 
 Resultado esperado:
 node/minikube-m02 labeled
 
 # Nodo en mantenimiento
-kubectl label node minikube-m03 maintenance=true (nodo 3)
+kubectl label node minikube-m03 maintenance=true
 
 Resultado esperado:
 node/minikube-m03 labeled

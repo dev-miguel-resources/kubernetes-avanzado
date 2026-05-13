@@ -1,22 +1,39 @@
+# -------------------------------------------
+# Kubernetes Scheduler + Affinity + Resources
+# -------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deploy-affinity
+  name: deploy-affinity-resources
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
-      app: affinity
+      app: affinity-resources
   template:
     metadata:
       labels:
-        app: affinity
+        app: affinity-resources
     spec:
       containers:
         - name: nginx
           image: nginx
           # Escala de verificación 3
-          resources: {}
+          resources:
+            requests:
+              cpu: "700m"
+              memory: "700Mi"
+
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+      # escala 2 de verificación: nodo 2
+      tolerations:
+        - key: gpu # Clave del taint del nodo
+          operator: Equal # Debe coincidir exactamente llave + valor
+          value: ml # Valor esperado del taint
+          effect: NoSchedule # Para poder programar en nodos con taint
 
       affinity:
         nodeAffinity:
@@ -28,45 +45,27 @@ spec:
                     operator: In
                     values:
                       - amd64 # Solo nodos con esta arquitectura
-                  - key: gpu # topology keys
-                    operator: In
-                    values:
-                      - "true" # Solo nodos con esta arquitectura
 
           # escala 4 de verificación
           preferredDuringSchedulingIgnoredDuringExecution:
             # Pesos
-            #- weight: 100
-            #  preference:
-            #    matchExpressions:
-            #      - key: gpu
-            #        operator: In
-            #        values:
-            #          - "true" # Prefiere nodos con GPU disponible
-
-            - weight: 50
+            - weight: 100
               preference:
                 matchExpressions:
-                  - key: zone
-                    operator: NotIn
+                  - key: gpu
+                    operator: In
                     values:
-                      - us-east-1b # Prefiere nodos fuera de esta zona
+                      - "true" # Prefiere nodos con GPU disponible
 
-            - weight: 20
+            - weight: 50
               preference:
                 matchExpressions:
                   - key: fast-ssd
                     operator: Exists # Solo requiere que exista la etiqueta (key), el valor da lo mismo
 
-            - weight: 10
+            - weight: 20
               preference:
                 matchExpressions:
                   - key: maintenance
                     operator: DoesNotExist # Prefiere nodos que no tengan esta etiqueta
 
-      # escala 2 de verificación: nodo 2
-      tolerations:
-        - key: gpu # Clave del taint del nodo
-          operator: Equal # Debe coincidir exactamente llave + valor
-          value: ml # Valor esperado del taint
-          effect: NoSchedule # Para poder programar en nodos con taint

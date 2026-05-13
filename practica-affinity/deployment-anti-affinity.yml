@@ -1,0 +1,96 @@
+# -------------------------------------------
+# Kubernetes Scheduler COMPLETO
+# -------------------------------------------
+# Acá combinamos: nodeAffinity, podAntiAffinity, requests/limits, tains/tolerations
+
+# Objetivos:
+# 1. Kubernetes buscará nodos compatibles
+# 2. Luego verificaremos preferencias y recursos
+# 3. Finalmente verificamos el anti-affinity
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-affinity-antiaffinity
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: scheduler-demo
+  template:
+    metadata:
+      labels:
+        app: scheduler-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          # Escala de verificación 3
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
+
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+      affinity:
+        nodeAffinity:
+          # escala 1 de verificación
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch # topology keys
+                    operator: In
+                    values:
+                      - amd64 # Solo nodos con esta arquitectura
+
+          # escala 4 de verificación
+          preferredDuringSchedulingIgnoredDuringExecution:
+            # Pesos
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: gpu
+                    operator: In
+                    values:
+                      - "true" # Prefiere nodos con GPU disponible
+
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: fast-ssd
+                    operator: Exists # Solo requiere que exista la etiqueta (key), el valor da lo mismo
+
+            - weight: 20
+              preference:
+                matchExpressions:
+                  - key: maintenance
+                    operator: DoesNotExist # Prefiere nodos
+
+        podAntiAffinity:
+          # Preferencia (NO Obligatoria)
+          # Voy a evitar que pods iguales queden asociados al mismo nodo como preferencia.
+
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+
+              podAffinityTerm:
+                # Busca Pods con este label
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - scheduler-demo
+
+                # Comparación por nodo
+                topologyKey: kubernetes.io/hostname
+
+      # escala 2 de verificación: nodo 2
+      tolerations:
+        - key: gpu # Clave del taint del nodo
+          operator: Equal # Debe coincidir exactamente llave + valor
+          value: ml # Valor esperado del taint
+          effect: NoSchedule # Para poder programar en nodos con taint
