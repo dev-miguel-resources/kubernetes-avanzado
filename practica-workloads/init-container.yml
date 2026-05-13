@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-init
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: init-demo
+  template:
+    metadata:
+      labels:
+        app: init-demo
+    spec:
+      initContainers:
+        # Nombre del Init Container
+        - name: init-check
+          # Imagen utilizada
+          image: busybox
+          # Comando ejecutado por el Init Container
+          command:
+            - sh
+            - -c
+            - |
+              # Mensaje de inicio
+              echo "Esperando..."
+              # Simular una tarea previa de inicialización
+              # por ej:
+              # - esperar una base de datos
+              # - descargar archivos
+              # - validar conectividad
+              # - preparar configuraciones
+              sleep 15
+
+              # Mensaje final
+              echo "Inicialización terminada..."
+
+      containers:
+        - name: nginx
+          image: nginx

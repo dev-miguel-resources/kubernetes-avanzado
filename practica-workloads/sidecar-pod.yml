@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sidecar-demo
+spec:
+  # Definición de volúmenes compartidos entre contenedores
+  volumes:
+    - name: logs
+      # Para volumenes temporales
+      # El volumen vive mientras el Pod exista
+      emptyDir: {}
+  # Lista de contenedores dentro del Pod
+  containers:
+    - name: app
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+
+          # Bucle infinito
+          while true
+          do
+
+            # Escribir mensajes en un archivo de logs compartido
+            echo "Aplicación funcionando $(date)" >> /logs/app.log
+
+            # Esperar 5 segundos
+            sleep 5
+          done
+
+      # Montaje del volumen compartido
+      volumeMounts:
+        - name: logs
+          # Ruta donde el volumen será montado dentro del contenedor
+          mountPath: /logs
+
+    # Contenedor Sidecar
+    # Su función es apoyar al contenedor principal
+    # En este caso consume/visualiza logs
+    - name: sidecar
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+
+          # Mostrar continuamente el contenido de logs de la app principal
+          # tail -f quedar escuchando nuevos registros en tiempo real
+          tail -f /logs/app.log
+
+      # El Sidecar monta el mismo volumen compartido
+      volumeMounts:
+        - name: logs
+          # Ruta de montaje dentro del contenedor Sidecar
+          mountPath: /logs

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ambassador-demo
+spec:
+  containers:
+    - name: app
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+          # Bucle infinito
+          while true
+          do
+            # Realizar peticiones HTTP al contenedor ambassador
+            # usando localhost:9000
+            # Ambos contenedores comparten la misma red del Pod
+            wget -qO- localhost:9000
+           
+            # Espera de 10 seg.
+            sleep 10
+
+          done
+
+    # Contenedor Ambassador
+    # Actúa como intermediario/proxy para la app principal
+    - name: ambassador
+      image: nginx
+
+      ports:
+        # Puerto donde escuchará conexiones
+        - containerPort: 9000
