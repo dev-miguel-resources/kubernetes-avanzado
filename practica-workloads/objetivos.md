@@ -58,3 +58,12 @@ y el ambassador se encarga de:
 localhost:9000 --> app-service:8080
 
 App1 --> Ambassador -> App2
+
+Parte 5 - Adapter Pattern
+
+Objetivo:
+
+Transformar formatos de salida.
+
+"La aplicación produce datos, el adapter los convierte
+en un formato entendible para otros sistemas".

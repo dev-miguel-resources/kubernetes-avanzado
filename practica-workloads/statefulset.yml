@@ -1,0 +1,48 @@
+# kubectl apply -f statefulset.yml
+#
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx-stateful
+spec:
+  # Nombre del headless service asociado
+  # Este service permite entregar identidad estable
+  # a cada pod del statefulset
+  serviceName: nginx-headless
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-stateful
+  template:
+    metadata:
+      labels:
+        app: nginx-stateful
+    spec:
+      # Contenedor principal
+      containers:
+        - name: nginx
+          image: nginx
+          # Montaje del volumen persistente dentro del contenedor
+          volumeMounts:
+            - name: data
+              # Ruta del volumen que será asociado al PVC
+              mountPath: /usr/share/nginx/html
+
+  # PLantilla automática del PVC (PersistentVolumeClaim)
+  # Kubernetes crea un PVC independiente para cada réplica
+  volumeClaimTemplates:
+    # Nombre base del PVC
+    # Kubernetes generará nombres de esta forma:
+    # data-nginx-stateful-0
+    # data-nginx-stateful-1
+    # data-nginx-stateful-2
+    - metadata:
+        name: data
+      spec:
+        # El volumen puede montarse en lectura/escritura
+        accessModes: ["ReadWriteOnce"]
+        # Recursos solicitados para el almacenamiento
+        resources:
+          requests:
+            # Tamaño solicitado para cada PVC
+            storage: 1Gi

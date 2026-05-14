@@ -1,0 +1,45 @@
+# Paso 3 - Ambassador Pods
+# kubectl apply -f ambassador-demo.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ambassador-demo
+spec:
+  containers:
+    # App Principal
+    - name: app
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+          while true
+          do
+            echo "Consumiendo backend vía ambassador..."
+            wget -qO- http://localhost:9000
+            sleep 5
+          done
+
+    # Ambassador App
+    - name: ambassador
+      image: nginx
+
+      ports:
+        - containerPort: 9000
+
+      command:
+        - sh
+        - -c
+        - |
+          echo '
+            server {
+
+              listen 9000;
+
+              location / {
+
+                proxy_pass http://backend-service;
+              }
+          }' > /etc/nginx/conf.d/default.conf
+
+          nginx -g "daemon off;"

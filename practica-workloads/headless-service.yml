@@ -1,0 +1,20 @@
+# kubectl apply -f headless-service.yml
+# kubectl get svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-headless
+spec:
+  # None convierte este Service en un Headless Service
+  # Kubernetes NO asignará una IP virtual al Service
+  # Este gestiona las IPS individuales de cada pod para el tráfico
+  # POD DNS
+  # nginx-stateful-0 -> nginx-stateful-0.nginx-headless
+  # nginx-stateful-1 -> nginx-stateful-1.nginx-headless
+  # nginx-stateful-2 -> nginx-stateful-2.nginx-headless
+  clusterIP: None
+  selector:
+    app: nginx-stateful
+  ports:
+    - port: 80
+      targetPort: 80

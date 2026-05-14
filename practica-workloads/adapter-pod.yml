@@ -1,0 +1,65 @@
+# kubectl apply -f adapter-pod.yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: adapter-demo
+spec:
+  # Definición de volumen compartido entre contenedores
+  volumes:
+    - name: shared
+      # El volumen vive mientras el pod exista
+      emptyDir: {}
+  containers:
+    - name: app
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+
+          # Bucle infinito
+          while true
+          do
+            # Generar un log en mayúsculas
+            # y lo guardamos en el volumen compartido
+            echo "ERROR: APP FALLANDO" > /data/raw.log
+
+            # Espera de 5 seg.
+            sleep 5
+          done
+
+      # Generar el montaje del volumen compartido
+      volumeMounts:
+        # Nombre del volumen definido anteriormente
+        - name: shared
+          # Ruta donde será montado dentro del contenedor
+          mountPath: /data
+
+    # Contenedor Adapter
+    # Su función es transformar/adaptar datos generados
+    # por la aplicación principal
+    - name: adapter
+      image: busybox
+      command:
+        - sh
+        - -c
+        - |
+
+          # Bucle infinito
+          while true
+          do 
+
+            # Leer el archivo generado por la aplicación
+            # y transformar el texto:
+            # de MAYÚSCULAS A minúsculas
+            cat /data/raw.log | tr '[:upper:]' '[:lower:]'
+
+            # Espera de 5 seg.
+            sleep 5
+          done
+
+      # El adapter monta el mismo volumen compartido
+      volumeMounts:
+        - name: shared
+          # Ruta de montaje dentro del contenedor
+          mountPath: /data
