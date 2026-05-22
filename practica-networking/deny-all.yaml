@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  # Nombre de la policy
+  name: deny-all
+  namespace: backend
+spec:
+  # Todos los pods backend serán protegidos
+  podSelector: {}
+  policyTypes:
+    # Esta policy gestiona el control de tráfico que intenta ingresar a este espacio
+    # esto bloquea todo el tráfico entrante
+    # Microsegmentación - base de zero trust
+    - Ingress

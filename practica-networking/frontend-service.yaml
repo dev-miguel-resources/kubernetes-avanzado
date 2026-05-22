@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    # http://frontend-service:80
+    - port: 80
+      # puerto de redirección
+      targetPort: 80
+  type: ClusterIP
