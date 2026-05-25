@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  # Nombre de la policy
+  name: deny-egress-allow
+  namespace: frontend
+spec:
+  # Todos los pods backend serán protegidos
+  podSelector: {}
+  policyTypes:
+    # Esta policy gestiona el control de tráfico saliente.
+    # Esta policy NO controla ingreso, solo egreso.
+    # Microsegmentación de salida.
+    # Bloquea toda salida
+    # frontend NO puede salir a internet.
+    # frontende NO puede llegar a backend. OK
+    # frontend NO puede acceder a Services ni a su DNS.
+    # frontend NO puede comunicarse con otros pods.
+    # Solamente puede interactuar con apps del mismo pod.
+    # Control de movimiento lateral. (Seguridad importante).
+    - Egress
+  egress:
+    # Permite tráfico saliendo únicamente hacia namespaces con:
+    # name=backend
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: backend
+
+    # Permite Google HTTPS (dirección externa de internet)
+    - to:
+        - ipBlock:
+            cidr: 142.250.0.0/15

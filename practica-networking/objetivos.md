@@ -80,3 +80,28 @@ kubectl get po -n frontend -o wide
 kubectl exec -it -n frontend POD_NAME -- bash
 kubectl get po -n backend -o wide (en otra terminal)
 wget -qO- BACKEND_IP
+Resultado: Nadie puede entrar al backend
+
+Paso 11: Utilizar etiquetas de micro-segmentación y generamos una comunicación
+donde solo el frontend pueda hablar con el backend. "Permite únicamente tráfico desde el frontend"
+
+Aplicar labels
+kubectl label namespace frontend name=frontend
+kubectl get ns --show-labels
+
+Comunicación: namespace frontend -> backend namespace
+kubectl apply -f allow-frontend.yaml
+kubectl get netpol -n backend
+kubectl describe netpol allow-frontend -n backend
+
+Probar con otro namespace que ocurre:
+kubectl create namespace test
+
+Escenario actual:
+frontend -> backend = permitido
+
+test -> backend = denegado
+
+frontend -> test = permitido
+
+Paso 12: Egress deny (denegación de salida)

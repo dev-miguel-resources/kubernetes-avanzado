@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend
+  namespace: backend
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  # Reglas permitidas de entrada
+  ingress:
+    # Permite todo el tráfico desde namespaces que tengan
+    # el siguiente label, en este caso: name=frontend
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              # Labels que deben tener el namespace origen
+              # Solo namespaces con:
+              # podrán ingresar al namespace backend
+              name: frontend
