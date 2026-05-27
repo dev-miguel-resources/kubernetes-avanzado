@@ -1,0 +1,11 @@
+# Manifiesto de un emisor de certificados
+# "Ahora cert-manager tiene una entidad para emitir certificados dentro de este namespace"
+apiVersion: cert-manager.io/v1
+kind: Issuer # emisor de certificado
+metadata:
+  name: selfsigned-issuer
+  namespace: security-lab
+spec:
+  # Tipo de certificado
+  # selfSigned: El certificado fue firmado por la propia CA de Kubernetes
+  selfSigned: {}

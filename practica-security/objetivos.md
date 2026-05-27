@@ -56,3 +56,52 @@ kubectl config view
 Paso 9: Crear namespace
 kubectl create ns security-lab
 kubectl get ns
+
+Paso 10: Verificar el proveedor interno de certificados
+minikube ssh
+openssl version
+
+Paso 11: Crear una cuenta de servicio (ServiceAccount)
+kubectl create sa app-sa -n security-lab
+kubectl get sa -n security-lab
+kubectl describe sa app-sa -n security-lab
+
+Paso 12: Ver como se crea un token de autenticación para la sa
+kubectl create token app-sa -n security-lab
+
+Paso 13: Instalar cert-manager (gestor de certificaciones que trabaja con OpenSSL)
+Agregar el repositorio Helm: (Charts)
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+Instalar CRDs (Custom Resources Definition):
+Certificate = solicitar certificados
+Issuer = emisor del namespace local
+ClusterIssuer =  emisor global
+CertificateRequest = solicitud de una firma
+
+"Le dice el api server: ahora existen estos nuevos recursos relacionados con certificados"
+
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.crds.yaml
+
+Montar el cert-manager en un namespace:
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace
+kubectl get po -n cert-manager
+
+Paso 14: Crear un emisor con privilegios de auto-firmado por Kubernetes (CA)
+kubectl apply -f issuer.yaml
+kubectl get issuer -n security-lab
+
+Paso 15: Crear y desplegar certificado
+kubectl apply -f certificate.yaml
+kubectl get certificate -n security-lab
+kubectl get secret app-tls -n security-lab
+kubectl get secret app-tls -n security-lab -o yaml
+kubectl get secret app-tls -n security-lab -o jsonpath='{.data.tls\.crt}' | base64 -d
+
+Paso 16: Gestiones de cluster context con Kube Config
+kubectl config current-context
+kubectl config get-contexts
+kubectl config set-context laboratorio --cluster=minikube --user=minikube
+kubectl config use-context laboratorio
+kubectl config current-context

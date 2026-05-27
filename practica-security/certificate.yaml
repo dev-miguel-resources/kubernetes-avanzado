@@ -1,0 +1,21 @@
+# Crear un certificado TLS
+# Este certificada será válido para conexiones TLS
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: app-cert
+  namespace: security-lab
+spec:
+  # Nombre del Secret donde cert-manager almacenará:
+  # tls.crt (certificado)
+  # tls.key (private key)
+  secretName: app-tls
+
+  # Referencia al Issuer que firmará el certificado
+  issuerRef:
+    # Nombre del Issuer creado previamente
+    name: selfsigned-issuer
+  # Sans (Subject Alternative Names)
+  # DNS válidos para identificar el certificado TLS
+  dnsNames:
+    - app.seguridad.local
