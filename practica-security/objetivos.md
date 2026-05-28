@@ -105,3 +105,55 @@ kubectl config get-contexts
 kubectl config set-context laboratorio --cluster=minikube --user=minikube
 kubectl config use-context laboratorio
 kubectl config current-context
+
+Paso 17: RBAC (Implementar control de acceso, restringir permisos y comprender Roles y ClusterRoles)
+kubectl create ns rbac-lab
+kubectl get ns
+Crear un usuario de prueba con generación de llave personalizada:
+openssl genrsa -out dev-user.key 2048
+openssl req -new -key dev-user.key -out dev-user.csr
+Definición de role binding:
+kubectl apply -f rolebinding.yaml
+Verificar permisos:
+kubectl auth can-i list pods --as system:serviceaccount:security-lab:app-sa -n rbac-lab (yes)
+kubectl auth can-i delete pods --as system:serviceaccount:security-lab:app-sa -n rbac-lab (no)
+
+Paso 18: Crear un ClusterRole
+kubectl apply -f node-reader.yaml
+kubectl apply -f clusterrolebinding.yaml
+kubectl auth can-i list nodes --as system:serviceaccount:security-lab:app-sa (yes)
+kubectl auth can-i delete nodes --as system:serviceaccount:security-lab:app-sa (no)
+
+Paso 19: Service Accounts
+Ver algunas extras sobre estos recursos
+Revisar tokens de auth generados
+Deshabilitar automount (reglas para evadir ataques)
+
+kubectl apply -f pod-sa.yaml
+Revisar token de autenticación:
+kubectl exec -it pod-sa -n security-lab -- sh
+cd /var/run/secrets/kubernetes.io/serviceaccount
+kubectl apply -f pod-no-token.yaml
+kubectl exec -it pod-no-token -n security-lab -- sh
+"Se eliminó el montaje automático del token, reduciendo riesgos de seguridad para apps que no lo necesitan".
+ls /var/run/secrets/kubernetes.io/serviceaccount (no such file or directory)
+
+Parte 20: Security Contexts
+Aplicar endurecimientos estrictos de seguridad.
+Ejecutar contenedores sin privilegios.
+Limitar capacidades Linux.
+Implementar filesystem de solo lectura.
+Aplicar seccomp.
+
+Creamos pod inseguro:
+kubectl apply -f pod-insecure.yaml
+
+Puedes ejecutar como usuario root.
+Tiene capacidades por defecto.
+Filesystem escribible.
+Sin seccomp.
+
+kubectl apply -f secure-pod.yaml
+kubectl exec -it secure-pod -n security-lab -- id
+kubectl exec -it secure-pod -n security-lab -- sh
+touch /test (Read-only file system)

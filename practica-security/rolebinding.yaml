@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  # nombre del enrolamiento
+  name: read-pods
+  # espacio en que se propagará
+  namespace: rbac-lab
+subjects:
+  # cuenta de servicio que expone el control de permisos
+  - kind: ServiceAccount
+    name: app-sa
+    namespace: security-lab
+# la referencia de los permisos del rol asociados
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io

@@ -9,6 +9,7 @@ spec:
   # Nombre del Secret donde cert-manager almacenará:
   # tls.crt (certificado)
   # tls.key (private key)
+  # ca.crt (certificado del server app)
   secretName: app-tls
 
   # Referencia al Issuer que firmará el certificado

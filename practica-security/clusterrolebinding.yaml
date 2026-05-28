@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  # nombre del enrolamiento
+  name: node-reader-binding
+subjects:
+  # cuenta de servicio que expone el control de permisos
+  - kind: ServiceAccount
+    name: app-sa
+    namespace: security-lab
+# la referencia de los permisos del rol asociados
+roleRef:
+  kind: ClusterRole
+  name: node-reader
+  apiGroup: rbac.authorization.k8s.io

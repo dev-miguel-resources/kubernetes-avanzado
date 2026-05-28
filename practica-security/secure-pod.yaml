@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secure-pod
+  namespace: security-lab
+  # Permite restringir: instalaciones o ejecuciones corruptas, accesos anómalos a nivel de red
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/nginx: runtime/default
+spec:
+  # Security Context a nivel de pod
+  # Aplicamos configuraciones de seguridad general
+  securityContext:
+    # Obligar a que el contenedor no se ejecute como usuario root (UID 0)
+    runAsNonRoot: true
+    # Usuario básico sin privilegios que no permita modificar los recursos de sistema
+    runAsUser: 1000
+    # Configurar un perfil de seguridad seccomp.
+    # Bloquea todo tipo de llamadas maliciosas o peligrosas (syscalls).
+    # Beneficios: reduce superficios de ataque, limita explotación de vulnerabilidades.
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: nginx
+      image: nginxinc/nginx-unprivileged
+
+      # Security Context específico del contenedor
+      securityContext:
+        # Impedir elevar privilegios dentro del conteneor
+        # Evita que alguien tome en contenedor y habilite permisos extras
+        allowPrivilegeEscalation: false
+
+        # El filesystem raíz del contenedor no puedan ser manipulados
+        readOnlyRootFilesystem: true
+
+        # Manejo de capacidades hacia el sistema operativo Linux
+        capabilities:
+          # Elimina TODAS las opciones de manipulación sobre el kernel de Linux
+          # Reduce el poder de alcance al mínimo
+          drop:
+            - ALL
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+
+        # Cache necesaria para nginx
+        - name: cache
+          mountPath: /var/cache/nginx
+
+        # Arhivos de runtime
+        - name: run
+          mountPath: /var/run
+
+  volumes:
+    - name: tmp
+      emptyDir: {}
+
+    - name: cache
+      emptyDir: {}
+
+    - name: run
+      emptyDir: {}

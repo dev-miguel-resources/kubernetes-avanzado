@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+rules:
+  # api version group
+  - apiGroups: [""]
+    # nombre del o los recursos
+    resources: ["nodes"]
+    # acciones permitidas sobre dichos recursos
+    verbs: ["get", "watch", "list"]
