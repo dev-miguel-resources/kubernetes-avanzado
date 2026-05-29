@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cpu-burn
+spec:
+  # El pod solo puede ejecutarse en nodos con label stress=true
+  # nodeSelector:
+  #  stress: "true"
+  containers:
+    - name: stress
+      # una imagen para pruebas de carga artificial (simulación)
+      image: polinux/stress
+      command:
+        - stress
+      args:
+        # indica que se generará carga de CPU
+        - "--cpu"
+        # 2 workers/proceso
+        - "2"
+        # tiempo durante el cual se ejecutará la prueba
+        - "--timeout"
+        # Duración de la carga
+        # 600 segundos - 10 minutos
+        - "600s"

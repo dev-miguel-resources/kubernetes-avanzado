@@ -1,0 +1,42 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: nginx-vpa
+spec:
+  targetRef:
+    # api del recurso a escalar
+    apiVersion: apps/v1
+    # tipo de recurso a escalar
+    kind: Deployment
+    # nombre del recurso a escalar
+    name: nginx
+  # Modo de actualización del VPA
+  updatePolicy:
+    # Solo me entrega recomendaciones, no modifica automáticamente los pods ni reinicia contenedores
+    # ajustar dinámicamente los recursos para escalarlos respecto al análisis optimizado de metrics-server
+    # en prod sería: "Auto"
+    # eliminar el pod antiguo y lo reinicia con los nuevos cambios del escalado vertical.
+    updateMode: "Off"
+# en prod no va
+status:
+  # No es necesario denotarlo acá
+  # Kubernetes lo genera automáticamente, el VPA Recommender lo calcula dinámicamente
+  # aparece después de analizar métricas reales
+  # Recomendaciones generadas por el VPA
+  recomendation:
+    # Recomendaciones por contenedor
+    containerRecomendations:
+      - containerName: nginx
+        # Recursos ideales recomendados como base
+        target:
+          # CPU recomendado
+          cpu: 250m
+          # Memoria recomendada
+          memory: 512Mi
+        # Valor mínimo recomendado
+        lowerBound:
+          cpu: 100m
+          memory: 256Mi
+        upperBound:
+          cpu: "1"
+          memory: 1Gi
