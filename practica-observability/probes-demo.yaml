@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: probes-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: probes-demo
+  template:
+    metadata:
+      labels:
+        app: probes-demo
+    spec:
+      containers:
+        - name: web
+          image: nginx
+          ports:
+            - containerPort: 80
+
+          # Probes
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            # debe fallar 30 veces consecutivas para considerar un fallo en este estado
+            failureThreshold: 30
+            # ejecuta la prueba cada 2 seg.
+            periodSeconds: 2
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            # espera 5 seg. después de iniciar
+            initialDelaySeconds: 5
+            # después de eso, ejecuta el monitoreo cada 5 seg.
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            # espera 5 seg. para verificar si la app está activa
+            initialDelaySeconds: 5
+            # después continua verificando si la app se mantiene activa o está caída/colgada
+            periodSeconds: 5

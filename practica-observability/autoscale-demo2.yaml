@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscale-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: autoscale-demo
+  template:
+    metadata:
+      labels:
+        app: autoscale-demo
+    spec:
+      containers:
+        - name: stress
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              while true; do :; done
+
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "128Mi"

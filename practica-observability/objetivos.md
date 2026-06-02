@@ -54,3 +54,62 @@ helm status vpa --namespace default
 kubectl apply -f vpa.yaml
 kubectl get vpa
 kubectl describe vpa nginx-vpa
+
+Paso 4: Ejercicios con Cluster Autoscaler + HPA
+kubectl apply -f autoscale-demo1.yaml
+kubectl get po
+kubectl autoscale deployment autoscale-demo --cpu-percent=50 --min=1 --max=20
+kubectl get hpa
+kubectl top po (ver el consumo real de todas las aplicaciones)
+kubectl get hpa -w (observando consumo actual de cpu%)
+kubectl get po
+kubectl get po -w (observar la cantidad de aplicaciones actuales)
+kubectl get deploy autoscale-demo -w (observar cantidad de apps desde el deploy)
+
+Escalado manual sin HPA
+kubectl apply -f autoscale-demo2.yaml
+kubectl scale deploy autoscale-demo --replicas=20
+kubectl get po
+
+Paso 5: Manejo de estados/pruebas de salud (Probes) y (Handlers)
+kubectl apply -f probes-demo.yaml
+kubectl get po -w
+
+Paso 6. Aplicar políticas de disrupción (PDB) para asegurar disponibilidad de recursos
+antes manipulaciones voluntarias
+kubectl apply -f deployment.yaml
+kubectl get po -o wide
+kubectl apply -f pdb.yaml
+kubectl get pdb
+kubectl get nodes
+kubectl drain minikube --ignore-daemonsets --delete-emptydir-data --force
+kubectl get po -o wide -w
+
+Paso 7: Troubleshotting
+CrashLoopBackOff
+kubectl apply -f crash-app.yaml
+kubectl get po
+kubectl get po -w
+kubectl describe po crash-app
+kubectl get nodes
+kubectl uncordon minikube
+
+OomKilled
+kubectl apply -f oom-app.yaml
+kubectl get po
+kubectl get po -w
+kubectl describe po oom-test
+kubectl logs oom-test
+
+ErrorImagePullbackOff
+kubectl apply -f image-bad.yaml
+kubectl get po
+kubectl delete po bad-image
+kubectl apply -f image-bad.yaml
+kubectl get po
+
+Bloqueos de Nodo (Cordon)
+kubectl cordon minikube
+kubectl uncordon minikube
+kubectl get nodes
+
